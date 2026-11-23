@@ -15,11 +15,16 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.LibertiesEvents">
 
-        <!-- Main screen shown after the user logs in -->
+        <!-- Main screen shown after login -->
         <activity
             android:name=".MainActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
+
+        <!-- Event details screen -->
+        <activity
+            android:name=".EventDetailsActivity"
+            android:exported="false" />
 
         <!-- Login and registration screen opens first -->
         <activity

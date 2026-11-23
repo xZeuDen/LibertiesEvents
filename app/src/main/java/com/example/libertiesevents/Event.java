@@ -13,6 +13,7 @@ public class Event {
     public String venue;
     public String address;
 
+    public String organizer;
     public long startTime;
     public double latitude;
     public double longitude;
