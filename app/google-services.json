@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "10940829683",
+    "project_id": "libertiesevents-3731b",
+    "storage_bucket": "libertiesevents-3731b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:10940829683:android:3009386148947a69f9cc86",
+        "android_client_info": {
+          "package_name": "com.example.libertiesevents"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBVgizMmETIzhZ4M65gGw85gPY5-sZ0SPk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
