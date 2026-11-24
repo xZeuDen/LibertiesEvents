@@ -1,110 +1,181 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+    android:background="@color/le_background"
     android:padding="16dp">
 
-    <!-- App title -->
-    <TextView
+    <!-- Dashboard header -->
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Liberties Events"
-        android:textSize="26sp"
-        android:textStyle="bold"
-        android:layout_marginBottom="12dp" />
+        android:orientation="vertical"
+        android:background="@drawable/bg_dashboard_header"
+        android:padding="20dp">
 
-    <!-- Logged-in user -->
-    <TextView
-        android:id="@+id/welcomeText"
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="DUBLIN 8 · COMMUNITY"
+            android:textColor="@color/le_header_text"
+            android:textSize="11sp"
+            android:letterSpacing="0.12"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Liberties Events"
+            android:textSize="28sp"
+            android:textStyle="bold"
+            android:textColor="@color/le_surface"
+            android:layout_marginTop="6dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Discover what's happening around you."
+            android:textColor="@color/le_header_text"
+            android:textSize="14sp"
+            android:layout_marginTop="6dp" />
+
+        <TextView
+            android:id="@+id/welcomeText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Welcome"
+            android:textColor="@color/le_header_text"
+            android:textSize="12sp"
+            android:layout_marginTop="16dp" />
+
+    </LinearLayout>
+
+    <!-- Quick navigation -->
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Welcome"
-        android:textSize="14sp"
-        android:layout_marginBottom="16dp" />
+        android:orientation="horizontal"
+        android:layout_marginTop="12dp"
+        android:layout_marginBottom="16dp">
+
+        <Button
+            android:id="@+id/buttonMap"
+            android:layout_width="0dp"
+            android:layout_height="56dp"
+            android:layout_weight="1"
+            android:layout_marginEnd="4dp"
+            android:text="View Map"
+            android:textSize="12sp"
+            android:textAllCaps="false"
+            android:textColor="@color/le_primary"
+            android:minWidth="0dp"
+            android:paddingStart="4dp"
+            android:paddingEnd="4dp"
+            app:backgroundTint="@color/le_light_purple"
+            android:onClick="mapClick" />
+
+        <Button
+            android:id="@+id/buttonCalendar"
+            android:layout_width="0dp"
+            android:layout_height="56dp"
+            android:layout_weight="1"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp"
+            android:text="Calendar"
+            android:textSize="12sp"
+            android:textAllCaps="false"
+            android:textColor="@color/le_primary"
+            android:minWidth="0dp"
+            android:paddingStart="4dp"
+            android:paddingEnd="4dp"
+            app:backgroundTint="@color/le_light_purple"
+            android:onClick="calendarClick" />
+
+        <Button
+            android:id="@+id/buttonMyEvents"
+            android:layout_width="0dp"
+            android:layout_height="56dp"
+            android:layout_weight="1"
+            android:layout_marginStart="4dp"
+            android:text="My Events"
+            android:textSize="12sp"
+            android:textAllCaps="false"
+            android:textColor="@color/le_primary"
+            android:minWidth="0dp"
+            android:paddingStart="4dp"
+            android:paddingEnd="4dp"
+            app:backgroundTint="@color/le_light_purple"
+            android:onClick="myEventsClick" />
+
+    </LinearLayout>
 
     <!-- Events heading -->
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Community Events"
-        android:textSize="20sp"
+        android:text="Discover Events"
+        android:textColor="@color/le_text"
         android:textStyle="bold"
+        android:textSize="22sp"
         android:layout_marginBottom="8dp" />
 
-    <!-- Category filter -->
+    <!-- Category selection -->
     <Spinner
         android:id="@+id/spinnerCategory"
         android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:layout_marginBottom="8dp" />
+        android:layout_height="52dp"
+        android:background="@drawable/bg_event_card"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:theme="@style/ThemeOverlay.AppCompat.Light"
+        android:layout_marginBottom="10dp" />
 
-    <!-- Number of matching events -->
+    <!-- Number of events -->
     <TextView
         android:id="@+id/textEventCount"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Loading events..."
-        android:textSize="14sp"
-        android:layout_marginBottom="8dp" />
+        android:textSize="13sp"
+        android:textColor="@color/le_secondary_text"
+        android:layout_marginBottom="12dp" />
 
-    <!-- Events from Firebase -->
+    <!-- Event cards -->
     <ListView
         android:id="@+id/listEvents"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:dividerHeight="8dp" />
+        android:divider="@android:color/transparent"
+        android:dividerHeight="10dp"
+        android:paddingBottom="8dp"
+        android:clipToPadding="false"
+        android:scrollbars="none" />
 
     <!-- Administrator button -->
     <Button
         android:id="@+id/buttonAddEvent"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Add New Event"
+        android:layout_height="56dp"
+        android:text="+ Add New Event"
+        android:textAllCaps="false"
+        android:textColor="@color/le_surface"
+        app:backgroundTint="@color/le_primary"
         android:onClick="addEventClick"
-        android:visibility="gone" />
-
-    <!-- Map and calendar buttons -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-
-        <Button
-            android:id="@+id/buttonMap"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="View Map"
-            android:onClick="mapClick"
-            android:layout_marginEnd="4dp" />
-
-        <Button
-            android:id="@+id/buttonCalendar"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Calendar"
-            android:onClick="calendarClick"
-            android:layout_marginStart="4dp" />
-
-    </LinearLayout>
-
-    <!-- Subscribed events -->
-    <Button
-        android:id="@+id/buttonMyEvents"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="My Events"
-        android:onClick="myEventsClick" />
+        android:visibility="gone"
+        android:layout_marginTop="8dp" />
 
     <!-- Logout -->
     <Button
         android:id="@+id/buttonLogout"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="48dp"
         android:text="Logout"
+        android:textAllCaps="false"
+        android:textColor="@color/le_primary"
+        app:backgroundTint="@color/le_light_purple"
         android:onClick="logoutClick" />
 
 </LinearLayout>

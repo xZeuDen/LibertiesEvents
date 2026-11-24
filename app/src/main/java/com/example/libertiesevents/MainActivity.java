@@ -69,7 +69,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Set up the events list
         adapter = new ArrayAdapter<>(this,
-                android.R.layout.simple_list_item_1, eventNames);
+                R.layout.item_event, eventNames);
 
         listEvents.setAdapter(adapter);
 

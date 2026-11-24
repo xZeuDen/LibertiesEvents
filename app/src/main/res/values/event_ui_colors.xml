@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <color name="le_primary">#6750A4</color>
+    <color name="le_header">#30234F</color>
+    <color name="le_background">#F5F4F9</color>
+    <color name="le_surface">#FFFFFF</color>
+    <color name="le_text">#211A30</color>
+    <color name="le_secondary_text">#655D70</color>
+    <color name="le_border">#E2DDEB</color>
+    <color name="le_light_purple">#EDE6F8</color>
+    <color name="le_header_text">#DED3F4</color>
+
+</resources>
