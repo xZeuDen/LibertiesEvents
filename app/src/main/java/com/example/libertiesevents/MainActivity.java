@@ -67,7 +67,7 @@ public class MainActivity extends AppCompatActivity {
 
         listEvents.setAdapter(adapter);
 
-        // Open the event selected by the user
+        // Open the selected event
         listEvents.setOnItemClickListener((parent, view, position, id) -> {
 
             String eventId = eventIds.get(position);
@@ -79,7 +79,7 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
-        // Connect to the Firebase database
+        // Connect to Firebase
         FirebaseDatabase database = FirebaseDatabase.getInstance(
                 "https://libertiesevents-3731b-default-rtdb.europe-west1.firebasedatabase.app"
         );
@@ -88,7 +88,7 @@ public class MainActivity extends AppCompatActivity {
 
         loadEvents();
 
-        // Check whether the logged-in user is an administrator
+        // Check if the user is an administrator
         DatabaseReference adminRef = database.getReference("admins")
                 .child(user.getUid());
 
@@ -112,21 +112,20 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    // Read all community events from Firebase
+    // Read events from Firebase
     private void loadEvents() {
 
         eventsRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot snapshot) {
 
-                // Clear the old events
                 eventNames.clear();
                 eventIds.clear();
 
                 SimpleDateFormat format = new SimpleDateFormat(
                         "dd MMM yyyy, HH:mm", Locale.getDefault());
 
-                // Go through all events in Firebase
+                // Go through all events
                 for (DataSnapshot eventSnapshot : snapshot.getChildren()) {
 
                     Event event = eventSnapshot.getValue(Event.class);
@@ -164,7 +163,13 @@ public class MainActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
-    // Open the user's subscribed events
+    // Open Google Maps
+    public void mapClick(View view) {
+        Intent intent = new Intent(this, MapActivity.class);
+        startActivity(intent);
+    }
+
+    // Open subscribed events
     public void myEventsClick(View view) {
         Intent intent = new Intent(this, MyEventsActivity.class);
         startActivity(intent);

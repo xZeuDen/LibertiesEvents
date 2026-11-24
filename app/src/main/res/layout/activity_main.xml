@@ -49,6 +49,14 @@
         android:onClick="addEventClick"
         android:visibility="gone" />
 
+    <!-- Open Google Maps -->
+    <Button
+        android:id="@+id/buttonMap"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="View Map"
+        android:onClick="mapClick" />
+
     <!-- Subscribed events -->
     <Button
         android:id="@+id/buttonMyEvents"

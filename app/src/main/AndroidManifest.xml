@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- Internet permission for Firebase -->
+    <!-- Internet permission -->
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
@@ -14,6 +14,11 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.LibertiesEvents">
+
+        <!-- Google Maps API key -->
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="${MAPS_API_KEY}" />
 
         <!-- Main events screen -->
         <activity
@@ -36,6 +41,11 @@
             android:name=".AddEventActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
+
+        <!-- Google Maps screen -->
+        <activity
+            android:name=".MapActivity"
+            android:exported="false" />
 
         <!-- Login and registration -->
         <activity
