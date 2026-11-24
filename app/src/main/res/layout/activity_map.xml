@@ -22,13 +22,52 @@
         android:layout_marginTop="12dp"
         android:layout_marginBottom="8dp" />
 
-    <!-- Instructions for the user -->
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Select a marker and tap its name to view the event."
+        android:text="Choose a distance to find events near you."
         android:textSize="14sp"
-        android:layout_marginBottom="16dp" />
+        android:layout_marginBottom="8dp" />
+
+    <!-- Distance selection -->
+    <Spinner
+        android:id="@+id/spinnerRadius"
+        android:layout_width="match_parent"
+        android:layout_height="48dp" />
+
+    <!-- Near Me and Show All buttons -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <Button
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Near Me"
+            android:onClick="nearMeClick"
+            android:layout_marginEnd="4dp" />
+
+        <Button
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Show All"
+            android:onClick="showAllClick"
+            android:layout_marginStart="4dp" />
+
+    </LinearLayout>
+
+    <!-- Number of events found -->
+    <TextView
+        android:id="@+id/textResults"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Loading events..."
+        android:textSize="14sp"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="12dp" />
 
     <!-- Google Maps fragment -->
     <fragment
