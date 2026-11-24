@@ -3,9 +3,11 @@ package com.example.libertiesevents;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -29,13 +31,18 @@ public class MainActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
     private DatabaseReference eventsRef;
 
-    private TextView welcomeText;
+    private TextView welcomeText, textEventCount;
     private ListView listEvents;
     private Button buttonAddEvent;
+    private Spinner spinnerCategory;
 
-    private ArrayList<String> eventNames;
-    private ArrayList<String> eventIds;
+    private ArrayList<Event> events = new ArrayList<>();
+    private ArrayList<String> eventNames = new ArrayList<>();
+    private ArrayList<String> eventIds = new ArrayList<>();
+    private ArrayList<String> categories = new ArrayList<>();
+
     private ArrayAdapter<String> adapter;
+    private ArrayAdapter<String> categoryAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,17 +62,47 @@ public class MainActivity extends AppCompatActivity {
         welcomeText = findViewById(R.id.welcomeText);
         listEvents = findViewById(R.id.listEvents);
         buttonAddEvent = findViewById(R.id.buttonAddEvent);
+        spinnerCategory = findViewById(R.id.spinnerCategory);
+        textEventCount = findViewById(R.id.textEventCount);
 
         welcomeText.setText("Logged in as: " + user.getEmail());
 
-        // Create the event lists
-        eventNames = new ArrayList<>();
-        eventIds = new ArrayList<>();
-
+        // Set up the events list
         adapter = new ArrayAdapter<>(this,
                 android.R.layout.simple_list_item_1, eventNames);
 
         listEvents.setAdapter(adapter);
+
+        // Set up the category dropdown
+        categories.add("All Categories");
+
+        categoryAdapter = new ArrayAdapter<>(this,
+                android.R.layout.simple_spinner_item, categories);
+
+        categoryAdapter.setDropDownViewResource(
+                android.R.layout.simple_spinner_dropdown_item);
+
+        spinnerCategory.setAdapter(categoryAdapter);
+
+        // Filter events when a category is selected
+        spinnerCategory.setOnItemSelectedListener(
+                new AdapterView.OnItemSelectedListener() {
+
+                    @Override
+                    public void onItemSelected(AdapterView<?> parent,
+                                               View view, int position,
+                                               long id) {
+
+                        String category = parent.getItemAtPosition(position)
+                                .toString();
+
+                        displayEvents(category);
+                    }
+
+                    @Override
+                    public void onNothingSelected(AdapterView<?> parent) {
+                    }
+                });
 
         // Open the selected event
         listEvents.setOnItemClickListener((parent, view, position, id) -> {
@@ -112,44 +149,63 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    // Read events from Firebase
+    // Read events and categories from Firebase
     private void loadEvents() {
 
         eventsRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot snapshot) {
 
-                eventNames.clear();
-                eventIds.clear();
+                String selectedCategory = "All Categories";
 
-                SimpleDateFormat format = new SimpleDateFormat(
-                        "dd MMM yyyy, HH:mm", Locale.getDefault());
+                if (spinnerCategory.getSelectedItem() != null) {
+                    selectedCategory = spinnerCategory
+                            .getSelectedItem().toString();
+                }
 
-                // Go through all events
+                events.clear();
+                categories.clear();
+
+                categories.add("All Categories");
+
+                // Go through all events in Firebase
                 for (DataSnapshot eventSnapshot : snapshot.getChildren()) {
 
                     Event event = eventSnapshot.getValue(Event.class);
 
                     if (event != null) {
 
-                        String date = format.format(
-                                new Date(event.startTime));
+                        event.id = eventSnapshot.getKey();
+                        events.add(event);
 
-                        String eventText = event.title + "\n"
-                                + event.category + "\n"
-                                + date + "\n"
-                                + event.venue;
+                        // Add each category once
+                        if (event.category != null &&
+                                !categories.contains(event.category)) {
 
-                        eventNames.add(eventText);
-                        eventIds.add(eventSnapshot.getKey());
+                            categories.add(event.category);
+                        }
                     }
                 }
 
-                adapter.notifyDataSetChanged();
+                categoryAdapter.notifyDataSetChanged();
+
+                // Keep the previously selected category
+                int position = categories.indexOf(selectedCategory);
+
+                if (position == -1) {
+                    position = 0;
+                }
+
+                spinnerCategory.setSelection(position);
+
+                displayEvents(categories.get(position));
             }
 
             @Override
             public void onCancelled(DatabaseError error) {
+
+                textEventCount.setText("Error loading events");
+
                 Toast.makeText(MainActivity.this,
                         "Error loading events: " + error.getMessage(),
                         Toast.LENGTH_LONG).show();
@@ -157,7 +213,39 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    // Open the administrator event form
+    // Display events matching the selected category
+    private void displayEvents(String selectedCategory) {
+
+        eventNames.clear();
+        eventIds.clear();
+
+        SimpleDateFormat format = new SimpleDateFormat(
+                "dd MMM yyyy, HH:mm", Locale.getDefault());
+
+        for (Event event : events) {
+
+            // Check if the category matches
+            if (selectedCategory.equals("All Categories") ||
+                    selectedCategory.equals(event.category)) {
+
+                String date = format.format(new Date(event.startTime));
+
+                String eventText = event.title + "\n"
+                        + event.category + "\n"
+                        + date + "\n"
+                        + event.venue;
+
+                eventNames.add(eventText);
+                eventIds.add(event.id);
+            }
+        }
+
+        adapter.notifyDataSetChanged();
+
+        textEventCount.setText(eventNames.size() + " events found");
+    }
+
+    // Open the administrator form
     public void addEventClick(View view) {
         Intent intent = new Intent(this, AddEventActivity.class);
         startActivity(intent);
@@ -166,6 +254,12 @@ public class MainActivity extends AppCompatActivity {
     // Open Google Maps
     public void mapClick(View view) {
         Intent intent = new Intent(this, MapActivity.class);
+        startActivity(intent);
+    }
+
+    // Open the events calendar
+    public void calendarClick(View view) {
+        Intent intent = new Intent(this, CalendarActivity.class);
         startActivity(intent);
     }
 
@@ -181,7 +275,7 @@ public class MainActivity extends AppCompatActivity {
         openLogin();
     }
 
-    // Return to the login screen
+    // Return to login
     private void openLogin() {
         Intent intent = new Intent(this, AuthActivity.class);
         startActivity(intent);

@@ -49,6 +49,11 @@
             android:name=".MapActivity"
             android:exported="false" />
 
+        <!-- Events calendar -->
+        <activity
+            android:name=".CalendarActivity"
+            android:exported="false" />
+
         <!-- Login and registration -->
         <activity
             android:name=".AuthActivity"
