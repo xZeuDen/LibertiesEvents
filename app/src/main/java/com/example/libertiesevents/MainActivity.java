@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -30,6 +31,7 @@ public class MainActivity extends AppCompatActivity {
 
     private TextView welcomeText;
     private ListView listEvents;
+    private Button buttonAddEvent;
 
     private ArrayList<String> eventNames;
     private ArrayList<String> eventIds;
@@ -40,11 +42,10 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Get the current Firebase user
+        // Get the logged-in user
         mAuth = FirebaseAuth.getInstance();
         FirebaseUser user = mAuth.getCurrentUser();
 
-        // Return to login if the user is not signed in
         if (user == null) {
             openLogin();
             return;
@@ -53,10 +54,11 @@ public class MainActivity extends AppCompatActivity {
         // Connect the XML views
         welcomeText = findViewById(R.id.welcomeText);
         listEvents = findViewById(R.id.listEvents);
+        buttonAddEvent = findViewById(R.id.buttonAddEvent);
 
         welcomeText.setText("Logged in as: " + user.getEmail());
 
-        // Create lists for event names and Firebase IDs
+        // Create the event lists
         eventNames = new ArrayList<>();
         eventIds = new ArrayList<>();
 
@@ -65,7 +67,7 @@ public class MainActivity extends AppCompatActivity {
 
         listEvents.setAdapter(adapter);
 
-        // Open the selected event when clicked
+        // Open the event selected by the user
         listEvents.setOnItemClickListener((parent, view, position, id) -> {
 
             String eventId = eventIds.get(position);
@@ -73,59 +75,77 @@ public class MainActivity extends AppCompatActivity {
             Intent intent = new Intent(MainActivity.this,
                     EventDetailsActivity.class);
 
-            // Pass the selected event ID to the details screen
             intent.putExtra("event_id", eventId);
-
             startActivity(intent);
         });
 
-        // Connect to the Firebase events database
-        eventsRef = FirebaseDatabase.getInstance(
+        // Connect to the Firebase database
+        FirebaseDatabase database = FirebaseDatabase.getInstance(
                 "https://libertiesevents-3731b-default-rtdb.europe-west1.firebasedatabase.app"
-        ).getReference("events");
+        );
+
+        eventsRef = database.getReference("events");
 
         loadEvents();
+
+        // Check whether the logged-in user is an administrator
+        DatabaseReference adminRef = database.getReference("admins")
+                .child(user.getUid());
+
+        adminRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot snapshot) {
+
+                Boolean isAdmin = snapshot.getValue(Boolean.class);
+
+                if (Boolean.TRUE.equals(isAdmin)) {
+                    buttonAddEvent.setVisibility(View.VISIBLE);
+                } else {
+                    buttonAddEvent.setVisibility(View.GONE);
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError error) {
+                buttonAddEvent.setVisibility(View.GONE);
+            }
+        });
     }
 
-    // Read events from Firebase
+    // Read all community events from Firebase
     private void loadEvents() {
 
         eventsRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot snapshot) {
 
-                // Clear the old lists before loading events
+                // Clear the old events
                 eventNames.clear();
                 eventIds.clear();
 
-                // Go through each event in Firebase
+                SimpleDateFormat format = new SimpleDateFormat(
+                        "dd MMM yyyy, HH:mm", Locale.getDefault());
+
+                // Go through all events in Firebase
                 for (DataSnapshot eventSnapshot : snapshot.getChildren()) {
 
                     Event event = eventSnapshot.getValue(Event.class);
 
                     if (event != null) {
 
-                        // Format the event date
-                        SimpleDateFormat format = new SimpleDateFormat(
-                                "dd MMM yyyy, HH:mm", Locale.getDefault());
-
                         String date = format.format(
                                 new Date(event.startTime));
 
-                        // Create the text shown in the ListView
                         String eventText = event.title + "\n"
                                 + event.category + "\n"
                                 + date + "\n"
                                 + event.venue;
 
                         eventNames.add(eventText);
-
-                        // Store the Firebase ID for the selected event
                         eventIds.add(eventSnapshot.getKey());
                     }
                 }
 
-                // Refresh the ListView
                 adapter.notifyDataSetChanged();
             }
 
@@ -138,7 +158,19 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    // Logout button
+    // Open the administrator event form
+    public void addEventClick(View view) {
+        Intent intent = new Intent(this, AddEventActivity.class);
+        startActivity(intent);
+    }
+
+    // Open the user's subscribed events
+    public void myEventsClick(View view) {
+        Intent intent = new Intent(this, MyEventsActivity.class);
+        startActivity(intent);
+    }
+
+    // Logout
     public void logoutClick(View view) {
         mAuth.signOut();
         openLogin();

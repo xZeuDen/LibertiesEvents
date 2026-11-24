@@ -14,7 +14,7 @@
         android:textStyle="bold"
         android:layout_marginBottom="12dp" />
 
-    <!-- Display logged-in user -->
+    <!-- Logged-in user -->
     <TextView
         android:id="@+id/welcomeText"
         android:layout_width="match_parent"
@@ -32,7 +32,7 @@
         android:textStyle="bold"
         android:layout_marginBottom="12dp" />
 
-    <!-- List of events from Firebase -->
+    <!-- All Firebase events -->
     <ListView
         android:id="@+id/listEvents"
         android:layout_width="match_parent"
@@ -40,7 +40,24 @@
         android:layout_weight="1"
         android:dividerHeight="8dp" />
 
-    <!-- Logout button -->
+    <!-- Administrator button -->
+    <Button
+        android:id="@+id/buttonAddEvent"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Add New Event"
+        android:onClick="addEventClick"
+        android:visibility="gone" />
+
+    <!-- Subscribed events -->
+    <Button
+        android:id="@+id/buttonMyEvents"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="My Events"
+        android:onClick="myEventsClick" />
+
+    <!-- Logout -->
     <Button
         android:id="@+id/buttonLogout"
         android:layout_width="match_parent"

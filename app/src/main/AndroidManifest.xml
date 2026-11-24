@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- Internet permission needed for Firebase -->
+    <!-- Internet permission for Firebase -->
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
@@ -15,18 +15,29 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.LibertiesEvents">
 
-        <!-- Main screen shown after login -->
+        <!-- Main events screen -->
         <activity
             android:name=".MainActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
 
-        <!-- Event details screen -->
+        <!-- Event details -->
         <activity
             android:name=".EventDetailsActivity"
             android:exported="false" />
 
-        <!-- Login and registration screen opens first -->
+        <!-- Subscribed events -->
+        <activity
+            android:name=".MyEventsActivity"
+            android:exported="false" />
+
+        <!-- Administrator event form -->
+        <activity
+            android:name=".AddEventActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
+        <!-- Login and registration -->
         <activity
             android:name=".AuthActivity"
             android:exported="true"

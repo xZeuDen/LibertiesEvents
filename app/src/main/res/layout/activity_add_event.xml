@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <!-- Back button -->
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="← Back"
+            android:onClick="backClick" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Add New Event"
+            android:textSize="26sp"
+            android:textStyle="bold"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="20dp" />
+
+        <!-- Event title -->
+        <EditText
+            android:id="@+id/editTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Event title"
+            android:inputType="textCapSentences" />
+
+        <!-- Event description -->
+        <EditText
+            android:id="@+id/editDescription"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Event description"
+            android:inputType="textMultiLine"
+            android:minLines="3" />
+
+        <!-- Event category -->
+        <EditText
+            android:id="@+id/editCategory"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Category (e.g. Education &amp; Skills)"
+            android:inputType="textCapWords" />
+
+        <!-- Organisation running the event -->
+        <EditText
+            android:id="@+id/editOrganizer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Organiser name"
+            android:inputType="textCapWords" />
+
+        <!-- Event venue -->
+        <EditText
+            android:id="@+id/editVenue"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Venue name"
+            android:inputType="textCapWords" />
+
+        <!-- Event address -->
+        <EditText
+            android:id="@+id/editAddress"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Full address"
+            android:inputType="textPostalAddress" />
+
+        <!-- Date picker -->
+        <Button
+            android:id="@+id/buttonDate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Select Date"
+            android:onClick="dateClick"
+            android:layout_marginTop="16dp" />
+
+        <!-- Time picker -->
+        <Button
+            android:id="@+id/buttonTime"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Select Time"
+            android:onClick="timeClick" />
+
+        <!-- Event length in minutes -->
+        <EditText
+            android:id="@+id/editDuration"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Duration in minutes (e.g. 60)"
+            android:inputType="number" />
+
+        <!-- Maximum number of attendees -->
+        <EditText
+            android:id="@+id/editCapacity"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Capacity (e.g. 30)"
+            android:inputType="number" />
+
+        <!-- Free or paid event -->
+        <CheckBox
+            android:id="@+id/checkFree"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Free event"
+            android:checked="true"
+            android:layout_marginTop="12dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Event Coordinates"
+            android:textStyle="bold"
+            android:textSize="18sp"
+            android:layout_marginTop="24dp"
+            android:layout_marginBottom="8dp" />
+
+        <!-- Coordinates will be used for Google Maps -->
+        <EditText
+            android:id="@+id/editLatitude"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Latitude (e.g. 53.343)"
+            android:inputType="numberDecimal|numberSigned" />
+
+        <EditText
+            android:id="@+id/editLongitude"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Longitude (e.g. -6.277)"
+            android:inputType="numberDecimal|numberSigned" />
+
+        <!-- Save new event to Firebase -->
+        <Button
+            android:id="@+id/buttonSave"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Save Event"
+            android:onClick="saveEventClick"
+            android:layout_marginTop="24dp"
+            android:layout_marginBottom="20dp" />
+
+    </LinearLayout>
+
+</ScrollView>
