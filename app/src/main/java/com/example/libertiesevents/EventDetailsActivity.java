@@ -13,6 +13,9 @@ import android.os.Bundle;
 import android.provider.Settings;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.RadioGroup;
+import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -28,6 +31,7 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Locale;
 
 public class EventDetailsActivity extends AppCompatActivity {
@@ -37,7 +41,7 @@ public class EventDetailsActivity extends AppCompatActivity {
     private TextView textDescription;
 
     private Button buttonSubscribe, buttonReminder;
-    private Button buttonCancelReminder;
+    private Button buttonCancelReminder, buttonFeedback;
 
     private DatabaseReference subscriptionRef;
 
@@ -63,6 +67,7 @@ public class EventDetailsActivity extends AppCompatActivity {
         buttonSubscribe = findViewById(R.id.buttonSubscribe);
         buttonReminder = findViewById(R.id.buttonReminder);
         buttonCancelReminder = findViewById(R.id.buttonCancelReminder);
+        buttonFeedback = findViewById(R.id.buttonFeedback);
 
         // Get the selected event and user
         eventId = getIntent().getStringExtra("event_id");
@@ -117,6 +122,8 @@ public class EventDetailsActivity extends AppCompatActivity {
                     textOrganizer.setText("Organiser: " + event.organizer);
                     textDescription.setText(event.description);
 
+                    buttonFeedback.setEnabled(true);
+
                     checkSubscription();
 
                 } else {
@@ -161,7 +168,7 @@ public class EventDetailsActivity extends AppCompatActivity {
                 });
     }
 
-    // Update the buttons
+    // Update the subscription buttons
     private void updateButtons() {
 
         if (subscribed) {
@@ -405,6 +412,134 @@ public class EventDetailsActivity extends AppCompatActivity {
                         Toast.LENGTH_SHORT).show();
             }
         }
+    }
+
+    // Open the feedback survey
+    public void feedbackClick(View view) {
+
+        DatabaseReference feedbackRef = FirebaseDatabase.getInstance(
+                        "https://libertiesevents-3731b-default-rtdb.europe-west1.firebasedatabase.app"
+                ).getReference("feedback")
+                .child(eventId)
+                .child(userId);
+
+        // Check for any previous feedback
+        feedbackRef.addListenerForSingleValueEvent(
+                new ValueEventListener() {
+
+                    @Override
+                    public void onDataChange(DataSnapshot snapshot) {
+
+                        showFeedbackDialog(feedbackRef, snapshot);
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError error) {
+
+                        Toast.makeText(EventDetailsActivity.this,
+                                "Error loading feedback",
+                                Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+
+    // Display the survey form
+    private void showFeedbackDialog(DatabaseReference feedbackRef,
+                                    DataSnapshot snapshot) {
+
+        View surveyView = getLayoutInflater().inflate(
+                R.layout.dialog_feedback, null);
+
+        RatingBar ratingBar = surveyView.findViewById(R.id.ratingBar);
+        RadioGroup radioRecommend =
+                surveyView.findViewById(R.id.radioRecommend);
+
+        EditText editFeedback =
+                surveyView.findViewById(R.id.editFeedback);
+
+        // Display previous answers if they exist
+        if (snapshot.exists()) {
+
+            Long rating = snapshot.child("rating").getValue(Long.class);
+            Boolean recommend = snapshot.child("recommend")
+                    .getValue(Boolean.class);
+
+            String comment = snapshot.child("comment")
+                    .getValue(String.class);
+
+            if (rating != null) {
+                ratingBar.setRating(rating.floatValue());
+            }
+
+            if (recommend != null) {
+                if (recommend) {
+                    radioRecommend.check(R.id.radioYes);
+                } else {
+                    radioRecommend.check(R.id.radioNo);
+                }
+            }
+
+            editFeedback.setText(comment);
+        }
+
+        // Create the survey dialog
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setTitle("Event Feedback")
+                .setView(surveyView)
+                .setPositiveButton("Submit Feedback", null)
+                .setNegativeButton("Cancel", null)
+                .create();
+
+        dialog.show();
+
+        // Submit the feedback
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE)
+                .setOnClickListener(v -> {
+
+                    int rating = (int) ratingBar.getRating();
+
+                    int selectedAnswer =
+                            radioRecommend.getCheckedRadioButtonId();
+
+                    String comment = editFeedback.getText()
+                            .toString().trim();
+
+                    // Check that both questions were answered
+                    if (rating == 0 || selectedAnswer == -1) {
+
+                        Toast.makeText(this,
+                                "Please answer both questions",
+                                Toast.LENGTH_SHORT).show();
+
+                        return;
+                    }
+
+                    boolean recommend = selectedAnswer == R.id.radioYes;
+
+                    // Store the answers
+                    HashMap<String, Object> feedback = new HashMap<>();
+
+                    feedback.put("rating", rating);
+                    feedback.put("recommend", recommend);
+                    feedback.put("comment", comment);
+
+                    // Save feedback to Firebase
+                    feedbackRef.setValue(feedback)
+                            .addOnSuccessListener(unused -> {
+
+                                Toast.makeText(this,
+                                        "Thank you for your feedback!",
+                                        Toast.LENGTH_SHORT).show();
+
+                                dialog.dismiss();
+                            })
+                            .addOnFailureListener(e -> {
+
+                                Toast.makeText(this,
+                                        "Could not save feedback",
+                                        Toast.LENGTH_SHORT).show();
+                            });
+                });
     }
 
     // Return to the previous screen
