@@ -85,6 +85,15 @@
             android:layout_height="wrap_content"
             android:textSize="16sp" />
 
+        <!-- Subscribe or unsubscribe -->
+        <Button
+            android:id="@+id/buttonSubscribe"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Subscribe to Event"
+            android:onClick="subscriptionClick"
+            android:layout_marginTop="28dp" />
+
     </LinearLayout>
 
 </ScrollView>
