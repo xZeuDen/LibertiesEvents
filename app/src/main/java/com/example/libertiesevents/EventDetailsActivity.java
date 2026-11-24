@@ -1,6 +1,16 @@
 package com.example.libertiesevents;
 
+import android.Manifest;
+import android.app.AlarmManager;
+import android.app.AlertDialog;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -26,16 +36,22 @@ public class EventDetailsActivity extends AppCompatActivity {
     private TextView textVenue, textAddress, textOrganizer;
     private TextView textDescription;
 
-    private Button buttonSubscribe;
+    private Button buttonSubscribe, buttonReminder;
+    private Button buttonCancelReminder;
+
     private DatabaseReference subscriptionRef;
+
     private boolean subscribed = false;
+
+    private String eventId, userId;
+    private Event event;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_event_details);
 
-        // Connect the views to the XML layout
+        // Connect the XML views
         textTitle = findViewById(R.id.textTitle);
         textCategory = findViewById(R.id.textCategory);
         textDate = findViewById(R.id.textDate);
@@ -43,10 +59,14 @@ public class EventDetailsActivity extends AppCompatActivity {
         textAddress = findViewById(R.id.textAddress);
         textOrganizer = findViewById(R.id.textOrganizer);
         textDescription = findViewById(R.id.textDescription);
-        buttonSubscribe = findViewById(R.id.buttonSubscribe);
 
-        // Get the selected event and logged-in user
-        String eventId = getIntent().getStringExtra("event_id");
+        buttonSubscribe = findViewById(R.id.buttonSubscribe);
+        buttonReminder = findViewById(R.id.buttonReminder);
+        buttonCancelReminder = findViewById(R.id.buttonCancelReminder);
+
+        // Get the selected event and user
+        eventId = getIntent().getStringExtra("event_id");
+
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
         if (eventId == null || user == null) {
@@ -56,19 +76,20 @@ public class EventDetailsActivity extends AppCompatActivity {
             return;
         }
 
-        // Get the current user's subscription for this event
+        userId = user.getUid();
+
+        // Get the user's subscription
         subscriptionRef = FirebaseDatabase.getInstance(
                         "https://libertiesevents-3731b-default-rtdb.europe-west1.firebasedatabase.app"
                 ).getReference("subscriptions")
-                .child(user.getUid())
+                .child(userId)
                 .child(eventId);
 
-        loadEvent(eventId);
-        checkSubscription();
+        loadEvent();
     }
 
     // Read the selected event from Firebase
-    private void loadEvent(String eventId) {
+    private void loadEvent() {
 
         DatabaseReference eventRef = FirebaseDatabase.getInstance(
                 "https://libertiesevents-3731b-default-rtdb.europe-west1.firebasedatabase.app"
@@ -78,18 +99,16 @@ public class EventDetailsActivity extends AppCompatActivity {
             @Override
             public void onDataChange(DataSnapshot snapshot) {
 
-                Event event = snapshot.getValue(Event.class);
+                event = snapshot.getValue(Event.class);
 
                 if (event != null) {
 
-                    // Format the event date
                     SimpleDateFormat format = new SimpleDateFormat(
                             "dd MMM yyyy, HH:mm", Locale.getDefault());
 
-                    String date = format.format(
-                            new Date(event.startTime));
+                    String date = format.format(new Date(event.startTime));
 
-                    // Display the event information
+                    // Display event details
                     textTitle.setText(event.title);
                     textCategory.setText(event.category);
                     textDate.setText("Date: " + date);
@@ -98,11 +117,12 @@ public class EventDetailsActivity extends AppCompatActivity {
                     textOrganizer.setText("Organiser: " + event.organizer);
                     textDescription.setText(event.description);
 
+                    checkSubscription();
+
                 } else {
                     Toast.makeText(EventDetailsActivity.this,
                             "Event not found",
                             Toast.LENGTH_SHORT).show();
-                    buttonSubscribe.setEnabled(false);
                 }
             }
 
@@ -115,21 +135,21 @@ public class EventDetailsActivity extends AppCompatActivity {
         });
     }
 
-    // Check if the user has already subscribed
+    // Check if the user is subscribed
     private void checkSubscription() {
 
         subscriptionRef.addListenerForSingleValueEvent(
                 new ValueEventListener() {
+
                     @Override
                     public void onDataChange(DataSnapshot snapshot) {
 
-                        subscribed = snapshot.exists();
+                        subscribed = Boolean.TRUE.equals(
+                                snapshot.getValue(Boolean.class));
 
-                        if (subscribed) {
-                            buttonSubscribe.setText("Unsubscribe");
-                        } else {
-                            buttonSubscribe.setText("Subscribe to Event");
-                        }
+                        buttonSubscribe.setEnabled(true);
+
+                        updateButtons();
                     }
 
                     @Override
@@ -141,16 +161,32 @@ public class EventDetailsActivity extends AppCompatActivity {
                 });
     }
 
-    // Subscribe or unsubscribe when the button is clicked
+    // Update the buttons
+    private void updateButtons() {
+
+        if (subscribed) {
+            buttonSubscribe.setText("Unsubscribe");
+            buttonReminder.setVisibility(View.VISIBLE);
+            buttonCancelReminder.setVisibility(View.VISIBLE);
+        } else {
+            buttonSubscribe.setText("Subscribe to Event");
+            buttonReminder.setVisibility(View.GONE);
+            buttonCancelReminder.setVisibility(View.GONE);
+        }
+    }
+
+    // Subscribe or unsubscribe
     public void subscriptionClick(View view) {
 
         if (subscribed) {
 
-            // Remove the user's subscription
             subscriptionRef.removeValue()
                     .addOnSuccessListener(unused -> {
+
                         subscribed = false;
-                        buttonSubscribe.setText("Subscribe to Event");
+
+                        cancelReminder();
+                        updateButtons();
 
                         Toast.makeText(this, "Unsubscribed",
                                 Toast.LENGTH_SHORT).show();
@@ -162,11 +198,12 @@ public class EventDetailsActivity extends AppCompatActivity {
 
         } else {
 
-            // Save the user's subscription in Firebase
             subscriptionRef.setValue(true)
                     .addOnSuccessListener(unused -> {
+
                         subscribed = true;
-                        buttonSubscribe.setText("Unsubscribe");
+
+                        updateButtons();
 
                         Toast.makeText(this, "Subscribed successfully",
                                 Toast.LENGTH_SHORT).show();
@@ -178,7 +215,199 @@ public class EventDetailsActivity extends AppCompatActivity {
         }
     }
 
-    // Return to the events list
+    // Set Reminder button
+    public void reminderClick(View view) {
+
+        if (!subscribed || event == null) {
+            return;
+        }
+
+        // Ask for notification permission
+        if (Build.VERSION.SDK_INT >= 33 &&
+                checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)
+                        != PackageManager.PERMISSION_GRANTED) {
+
+            requestPermissions(new String[]{
+                    Manifest.permission.POST_NOTIFICATIONS
+            }, 2);
+
+            return;
+        }
+
+        showReminderOptions();
+    }
+
+    // Display reminder options
+    private void showReminderOptions() {
+
+        NotificationManager manager = (NotificationManager)
+                getSystemService(NOTIFICATION_SERVICE);
+
+        if (!manager.areNotificationsEnabled()) {
+            Toast.makeText(this, "Enable notifications in Settings",
+                    Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        AlarmManager alarmManager = (AlarmManager)
+                getSystemService(ALARM_SERVICE);
+
+        // Check exact alarm permission
+        if (Build.VERSION.SDK_INT >= 31 &&
+                !alarmManager.canScheduleExactAlarms()) {
+
+            Toast.makeText(this,
+                    "Allow alarms and reminders, then set the reminder again",
+                    Toast.LENGTH_LONG).show();
+
+            Intent intent = new Intent(
+                    Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM);
+
+            intent.setData(Uri.parse("package:" + getPackageName()));
+
+            startActivity(intent);
+            return;
+        }
+
+        String[] options = {
+                "In 1 minute",
+                "10 minutes before the event",
+                "1 hour before the event"
+        };
+
+        new AlertDialog.Builder(this)
+                .setTitle("Set Event Reminder")
+                .setItems(options, (dialog, which) -> {
+
+                    long reminderTime;
+
+                    if (which == 0) {
+                        reminderTime = System.currentTimeMillis() + 60000L;
+                    } else if (which == 1) {
+                        reminderTime = event.startTime - 600000L;
+                    } else {
+                        reminderTime = event.startTime - 3600000L;
+                    }
+
+                    scheduleReminder(reminderTime);
+                })
+                .setNegativeButton("Close", null)
+                .show();
+    }
+
+    // Create the reminder intent
+    private Intent getReminderIntent() {
+
+        Intent intent = new Intent(this, ReminderReceiver.class);
+
+        intent.putExtra("event_id", eventId);
+        intent.putExtra("event_title", event.title);
+        intent.putExtra("user_id", userId);
+
+        // Identify each user's event reminder
+        intent.setData(Uri.parse(
+                "libertiesevents://reminder/" + userId + "/" + eventId));
+
+        return intent;
+    }
+
+    // Schedule the event reminder
+    private void scheduleReminder(long reminderTime) {
+
+        if (reminderTime <= System.currentTimeMillis() ||
+                reminderTime >= event.startTime) {
+
+            Toast.makeText(this, "Choose a valid reminder time",
+                    Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        AlarmManager alarmManager = (AlarmManager)
+                getSystemService(ALARM_SERVICE);
+
+        if (Build.VERSION.SDK_INT >= 31 &&
+                !alarmManager.canScheduleExactAlarms()) {
+
+            Toast.makeText(this, "Allow alarms and reminders first",
+                    Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(
+                this,
+                0,
+                getReminderIntent(),
+                PendingIntent.FLAG_UPDATE_CURRENT |
+                        PendingIntent.FLAG_IMMUTABLE);
+
+        // Schedule an exact alarm
+        alarmManager.setExactAndAllowWhileIdle(
+                AlarmManager.RTC_WAKEUP,
+                reminderTime,
+                pendingIntent);
+
+        Toast.makeText(this, "Reminder set successfully",
+                Toast.LENGTH_SHORT).show();
+    }
+
+    // Cancel Reminder button
+    public void cancelReminderClick(View view) {
+
+        cancelReminder();
+
+        Toast.makeText(this, "Reminder cleared",
+                Toast.LENGTH_SHORT).show();
+    }
+
+    // Cancel the scheduled alarm
+    private void cancelReminder() {
+
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(
+                this,
+                0,
+                getReminderIntent(),
+                PendingIntent.FLAG_NO_CREATE |
+                        PendingIntent.FLAG_IMMUTABLE);
+
+        if (pendingIntent != null) {
+
+            AlarmManager alarmManager = (AlarmManager)
+                    getSystemService(ALARM_SERVICE);
+
+            alarmManager.cancel(pendingIntent);
+            pendingIntent.cancel();
+        }
+
+        NotificationManager manager = (NotificationManager)
+                getSystemService(NOTIFICATION_SERVICE);
+
+        manager.cancel(userId + "/" + eventId, 1);
+    }
+
+    // Handle notification permission
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String[] permissions,
+                                           int[] grantResults) {
+
+        super.onRequestPermissionsResult(
+                requestCode, permissions, grantResults);
+
+        if (requestCode == 2) {
+
+            if (grantResults.length > 0 &&
+                    grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                showReminderOptions();
+
+            } else {
+                Toast.makeText(this, "Notification permission denied",
+                        Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    // Return to the previous screen
     public void backClick(View view) {
         finish();
     }

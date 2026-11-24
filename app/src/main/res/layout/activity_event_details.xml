@@ -37,7 +37,7 @@
             android:textSize="16sp"
             android:layout_marginBottom="20dp" />
 
-        <!-- Date and time -->
+        <!-- Event date -->
         <TextView
             android:id="@+id/textDate"
             android:layout_width="match_parent"
@@ -45,7 +45,7 @@
             android:textSize="16sp"
             android:layout_marginBottom="16dp" />
 
-        <!-- Venue -->
+        <!-- Event venue -->
         <TextView
             android:id="@+id/textVenue"
             android:layout_width="match_parent"
@@ -53,7 +53,7 @@
             android:textSize="16sp"
             android:layout_marginBottom="16dp" />
 
-        <!-- Address -->
+        <!-- Event address -->
         <TextView
             android:id="@+id/textAddress"
             android:layout_width="match_parent"
@@ -69,7 +69,6 @@
             android:textSize="16sp"
             android:layout_marginBottom="24dp" />
 
-        <!-- Description heading -->
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -92,7 +91,28 @@
             android:layout_height="wrap_content"
             android:text="Subscribe to Event"
             android:onClick="subscriptionClick"
+            android:enabled="false"
             android:layout_marginTop="28dp" />
+
+        <!-- Set reminder -->
+        <Button
+            android:id="@+id/buttonReminder"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Set Reminder"
+            android:onClick="reminderClick"
+            android:visibility="gone"
+            android:layout_marginTop="8dp" />
+
+        <!-- Cancel reminder -->
+        <Button
+            android:id="@+id/buttonCancelReminder"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Cancel Reminder"
+            android:onClick="cancelReminderClick"
+            android:visibility="gone"
+            android:layout_marginTop="8dp" />
 
     </LinearLayout>
 
